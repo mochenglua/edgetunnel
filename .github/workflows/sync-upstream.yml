@@ -1,37 +1,34 @@
 # ============================================================
-# 自动同步上游 edgetunnel 到你的 fork 仓库 (main 分支)
-# 放在你的 fork 仓库 .github/workflows/ 目录下
-# 说明:
-#   - 每 6 小时自动拉取上游 zizifn/edgetunnel 的 main 并合并推送
-#   - 也支持手动触发 (Actions -> Sync-upstream -> Run workflow)
-#   - 推送后 Cloudflare Pages 会自动触发重新部署
+# 覆盖式同步上游 edgetunnel 到 fork (main 分支)
+# 无冲突风险: 完全重置为上游最新代码
+# 注意: 会丢弃你 fork 上的所有本地改动
 # ============================================================
 name: Sync upstream
 
 on:
   schedule:
-    - cron: '0 */6 * * *'      # 每 6 小时同步一次
-  workflow_dispatch:            # 允许手动触发
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     permissions:
-      contents: write           # 允许 push 到本仓库
+      contents: write
 
     steps:
       - name: Checkout fork (main)
         uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0        # 拉全历史以便 merge
+          fetch-depth: 0
 
-      - name: Fetch upstream and merge
+      - name: Force reset to upstream
         run: |
           git remote add upstream https://github.com/zizifn/edgetunnel.git
           git fetch upstream
-          # 若存在远程分支冲突, 先合并 upstream/main 到当前 main
-          git merge upstream/main --no-edit
-          git push origin main
+          git checkout main
+          git reset --hard upstream/main
+          git push origin main --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
