@@ -1,7 +1,8 @@
 # ============================================================
 # 覆盖式同步上游 edgetunnel 到 fork (main 分支)
-# 无冲突风险: 完全重置为上游最新代码
 # 注意: 会丢弃你 fork 上的所有本地改动
+# 前置条件: 仓库 Settings -> Actions -> General ->
+#           Workflow permissions 选 "Read and write permissions"
 # ============================================================
 name: Sync upstream
 
@@ -13,10 +14,6 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      workflows: write   # 允许更新 .github/workflows/ 下的文件, 否则同步上游会拒绝
-
     steps:
       - name: Checkout fork (main)
         uses: actions/checkout@v4
